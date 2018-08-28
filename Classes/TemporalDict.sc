@@ -26,7 +26,7 @@ TemporalDict {
 		} {
 			time = seconds_since_start;
 		};
-		if ((this.starttime + time) <= this.mostrecentupdate) {
+		if ((this.starttime + time) < this.mostrecentupdate) {
 			"Error. Time cannot run backwards.".error;
 		};
 		this.eventlist = this.eventlist.add(('t' : time, 'replace' : ('key' : key, 'old' : datadict[key], 'new' : value)));

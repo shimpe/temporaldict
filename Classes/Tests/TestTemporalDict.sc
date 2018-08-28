@@ -142,8 +142,33 @@ TemporalDictMethodTester : UnitTest {
 		};
 		c.wait;
 	}
-}
 
+	test_corner_case_fw_rew_I {
+		var key = 23;
+		var td = TemporalDict();
+		td.set(key,123,0);
+		td.set(key,180,1);
+		td.set(key,100,2);
+		this.assertEquals(td.forward_data_seconds(0.5)[key], 123, "step 0");
+		this.assertEquals(td.rewind_data_seconds(0.5)[key], 123, "step 1");
+	}
+
+	test_corner_case_fw_rew_II {
+		var key = 23;
+		var td = TemporalDict();
+		td.set(key,123,0);
+		td.set(key,180,1);
+		td.set(key,100,2);
+		this.assertEquals(td.forward_data_seconds(0.5)[key], 123, "step 0");
+		this.assertEquals(td.rewind_data_seconds(0.50001)[key], nil, "step 1");
+		this.assertEquals(td.forward_data_seconds(0.00001)[key], 123, "step 2");
+		this.assertEquals(td.forward_data_seconds(1)[key], 180, "step 3");
+		this.assertEquals(td.rewind_data_seconds(0.00001)[key], 123, "step 4");
+		this.assertEquals(td.forward_data_seconds(0.00001)[key], 180, "step 5");
+		this.assertEquals(td.forward_data_seconds(100)[key], 100, "step 6");
+		this.assertEquals(td.rewind_data_seconds(1000)[key], nil, "step 7");
+	}
+}
 
 TemporalDictTester {
 	*new {
