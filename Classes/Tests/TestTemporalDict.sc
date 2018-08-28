@@ -113,11 +113,31 @@ TemporalDictMethodTester : UnitTest {
 			td.set(key, 345);
 			0.1.wait;
 			td.set(key, 123);
-
 			this.assertEquals(td.rewind_data_seconds(0.0)[key], 123, "step 0");
 			this.assertEquals(td.rewind_data_seconds(0.09)[key], 345, "step 1");
 			this.assertEquals(td.rewind_data_seconds(0.09)[key], 765, "step 2");
-			this.assertEquals(td.rewind_data_seconds(0.11)[key], nil, "step 3");
+			this.assertEquals(td.rewind_data_seconds(10.11)[key], nil, "step 3");
+			c.unhang;
+		};
+		c.wait;
+	}
+
+	test_forward_and_rewind {
+		var c = Condition.new();
+		fork {
+			var key = 23;
+			var td = TemporalDict();
+			td.set(key, 765);
+			0.1.wait;
+			td.set(key, 345);
+			0.1.wait;
+			td.set(key, 123);
+			this.assertEquals(td.rewind_data_seconds(0.0)[key], 123, "step 0");
+			this.assertEquals(td.rewind_data_seconds(0.09)[key], 345, "step 1");
+			this.assertEquals(td.forward_data_seconds(0.09)[key], 123, "step 2");
+			this.assertEquals(td.rewind_data_seconds(0.09)[key], 345, "step 1");
+			this.assertEquals(td.rewind_data_seconds(0.09)[key], 765, "step 3");
+			this.assertEquals(td.rewind_data_seconds(10.11)[key], nil, "step 4");
 			c.unhang;
 		};
 		c.wait;
