@@ -178,6 +178,24 @@ TemporalDictMethodTester : UnitTest {
 		this.assertEquals(td.forward_data_seconds(2)[key], 101112, "step 1");
 		this.assertEquals(td.rewind_data_seconds(5)[key], 456, "step 2");
 	}
+
+	test_time_to_index {
+		var td = TemporalDict();
+		var key = 5;
+		td.set(key, 10, 1);
+		td.set(key, 20, 2.4);
+		td.set(key, 30, 3.9);
+		td.set(key, 40, 4);
+		td.set(key, 50, 5);
+		this.assertEquals(td.pr_time_to_index(2.5, false), 2);
+		this.assertEquals(td.pr_time_to_index(2.5, true), 1);
+		this.assertEquals(td.pr_time_to_index(10, true), 4);
+		this.assertEquals(td.pr_time_to_index(10, false), nil);
+		this.assertEquals(td.pr_time_to_index(10, false, true), 4);
+		this.assertEquals(td.pr_time_to_index(0.1, true), nil);
+		this.assertEquals(td.pr_time_to_index(0.1, true, true), 0);
+		this.assertEquals(td.pr_time_to_index(0.1, false), 0);
+	}
 }
 
 TemporalDictTester {

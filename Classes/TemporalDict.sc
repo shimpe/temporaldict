@@ -80,6 +80,66 @@ TemporalDict {
 		^( (a < b) && (b <= c) );
 	}
 
+	pr_time_to_index { | time, find_closest_before = true, extrapolate = false |
+		var lowerbound = 0;
+		var upperbound = this.eventlist.size-1;
+		if (this.eventlist.size == 0) {
+			^nil;
+		};
+		if (this.eventlist.size == 1) {
+			^0;
+		};
+		if (time > this.eventlist[upperbound]['t']) {
+			if (find_closest_before) {
+				^upperbound;
+			} {
+				if (extrapolate) {
+					^upperbound;
+				} {
+					^nil;
+				};
+			};
+		};
+		if (time < this.eventlist[0]['t']) {
+			if (find_closest_before.not) {
+				^0;
+			} {
+				if (extrapolate) {
+					^0;
+				} {
+					^nil;
+				};
+			};
+		};
+		while ({(upperbound-lowerbound) > 1}, {
+			if (time == this.eventlist[lowerbound]['t']) {
+				^lowerbound;
+			} {
+				if (time > this.eventlist[lowerbound]['t']) {
+					var newbound = ((lowerbound + upperbound)/2).asInt;
+					if (time < this.eventlist[newbound]['t']) {
+						upperbound = newbound;
+					} {
+						if (time > this.eventlist[newbound]['t']) {
+							lowerbound = newbound;
+						} {
+							^newbound;
+						};
+					};
+				};
+			};
+		});
+		if (upperbound == lowerbound) {
+			^lowerbound;
+		} {
+			if (find_closest_before) {
+				^lowerbound;
+			} {
+				^upperbound;
+			};
+		};
+	}
+
 	forward_data_seconds { | seconds = 0 |
 		if (seconds < 0) {
 			// negative forwarding is rewinding
