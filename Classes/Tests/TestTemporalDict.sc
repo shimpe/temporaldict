@@ -150,7 +150,9 @@ TemporalDictMethodTester : UnitTest {
 		td.set(key,180,1);
 		td.set(key,100,2);
 		this.assertEquals(td.forward_data_seconds(0.5)[key], 123, "step 0");
-		this.assertEquals(td.rewind_data_seconds(0.5)[key], 123, "step 1");
+		this.assertEquals(td.rewind_data_seconds(0.5)[key], nil, "step 1"); // decisions, decisions
+		this.assertEquals(td.forward_data_seconds(0.5)[key], 123, "step 2");
+		this.assertEquals(td.rewind_data_seconds(0.49)[key], 123, "step 3");
 	}
 
 	test_corner_case_fw_rew_II {
@@ -195,6 +197,8 @@ TemporalDictMethodTester : UnitTest {
 		this.assertEquals(td.pr_time_to_index(0.1, true), nil);
 		this.assertEquals(td.pr_time_to_index(0.1, true, true), 0);
 		this.assertEquals(td.pr_time_to_index(0.1, false), 0);
+		this.assertEquals(td.pr_time_to_index(3.9, false), 2);
+		this.assertEquals(td.pr_time_to_index(3.9, true), 2);
 	}
 }
 

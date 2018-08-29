@@ -80,6 +80,10 @@ TemporalDict {
 		^( (a < b) && (b <= c) );
 	}
 
+	pr_float_equal { | f1, f2, tol=1e-6 |
+		^((f1 - f2).abs <= (tol * (f1.abs.max(f2.abs))));
+	}
+
 	pr_time_to_index { | time, find_closest_before = true, extrapolate = false |
 		var lowerbound = 0;
 		var upperbound = this.eventlist.size-1;
@@ -112,18 +116,22 @@ TemporalDict {
 			};
 		};
 		while ({(upperbound-lowerbound) > 1}, {
-			if (time == this.eventlist[lowerbound]['t']) {
+			if (this.pr_float_equal(time, this.eventlist[lowerbound]['t'])) {
 				^lowerbound;
 			} {
-				if (time > this.eventlist[lowerbound]['t']) {
-					var newbound = ((lowerbound + upperbound)/2).asInt;
-					if (time < this.eventlist[newbound]['t']) {
-						upperbound = newbound;
-					} {
-						if (time > this.eventlist[newbound]['t']) {
-							lowerbound = newbound;
+				if (this.pr_float_equal(time, this.eventlist[upperbound]['t'])) {
+					^upperbound;
+				} {
+					if (time > this.eventlist[lowerbound]['t']) {
+						var newbound = ((lowerbound + upperbound)/2).asInt;
+						if (time < this.eventlist[newbound]['t']) {
+							upperbound = newbound;
 						} {
-							^newbound;
+							if (time > this.eventlist[newbound]['t']) {
+								lowerbound = newbound;
+							} {
+								^newbound;
+							};
 						};
 					};
 				};
@@ -154,15 +162,14 @@ TemporalDict {
 				// if iterations happened before, build on the previous state to calculate the new state
 				var orig_snapshot_time = this.snapshot_time;
 				var reconstructedDict = this.snapshot_dict;
-				this.eventlist.do({ | ev |
-					// if event happened between previous snapshot and end time...
-					if (this.pr_sorted(this.snapshot_time, ev['t'], orig_snapshot_time + seconds)) {
-						// apply reconstruction
-						var operation = ev['replace'];
+				var first_relevant_event = this.pr_time_to_index(orig_snapshot_time, false);
+				var latest_relevant_event = this.pr_time_to_index(orig_snapshot_time + seconds, true);
+				if (latest_relevant_event >= first_relevant_event) {
+					(first_relevant_event..latest_relevant_event).do({ |index|
+						var operation = this.eventlist[index]['replace'];
 						reconstructedDict[operation['key']] = operation['new'];
-						this.snapshot_time = ev['t'];
-					}
-				});
+					});
+				};
 				// update snapshot time to new snapshot time
 				this.snapshot_time = orig_snapshot_time + seconds;
 				^reconstructedDict;
@@ -185,16 +192,15 @@ TemporalDict {
 				// if iterations happened before, build on previous state to calculate new state
 				var orig_snapshot_time = this.snapshot_time;
 				var reconstructedDict = this.snapshot_dict;
+				var latest_relevant_event = this.pr_time_to_index(orig_snapshot_time, true);
+				var first_relevant_event = this.pr_time_to_index(orig_snapshot_time - seconds, false);
 				// running backwards through events
-				this.eventlist.reverseDo({ | ev |
-					// if event happened before previous snapshot but after end time...
-					if (this.pr_sorted(orig_snapshot_time - seconds, ev['t'], this.snapshot_time)) {
-						// restore old value
-						var operation = ev['replace'];
+				if (first_relevant_event <= latest_relevant_event) {
+					(latest_relevant_event..first_relevant_event).do({ |index|
+						var operation = this.eventlist[index]['replace'];
 						reconstructedDict[operation['key']] = operation['old'];
-						this.snapshot_time = ev['t'];
-					}
-				});
+					});
+				};
 				// update snapshot time to new snapshot time
 				this.snapshot_time = orig_snapshot_time - seconds;
 				^reconstructedDict;
