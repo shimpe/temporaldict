@@ -1,5 +1,5 @@
 TemporalDict {
-
+	var <>initialstate;
 	var <>starttime;
 	var <>mostrecentupdate;
 	var <>eventlist;
@@ -7,14 +7,19 @@ TemporalDict {
 	var <>snapshot_dict;
 	var <>snapshot_time;
 
-	*new {
-		^super.new.init();
+	*new { | initialstate=nil |
+		^super.new.init(initialstate);
 	}
 
-	init {
+	init { | initialstate |
+		if (initialstate.isNil) {
+			this.initialstate = Dictionary();
+		} {
+			this.initialstate = initialstate.copy();
+		};
 		this.starttime = Date.localtime.rawSeconds;
 		this.eventlist = [];
-		this.datadict = Dictionary();
+		this.datadict = this.initialstate.copy();
 		this.mostrecentupdate = this.starttime;
 		^this;
 	}
@@ -41,7 +46,7 @@ TemporalDict {
 	}
 
 	get_data_seconds_from_begin { | seconds = 0 |
-		var reconstructedDict = Dictionary();
+		var reconstructedDict = this.initialstate.copy();
 		this.eventlist.do({ | evlist |
 			if (evlist['t'] <= seconds) {
 				var operation = evlist['replace'];
@@ -55,7 +60,7 @@ TemporalDict {
 		// shorter but possibly more expensive:
 		/*var rel_time = this.mostrecentupdate - seconds;
 		^this.get_data_seconds_from_begin(rel_time);*/
-		var reconstructedDict = this.datadict;
+		var reconstructedDict = this.datadict.copy();
 		this.eventlist.reverseDo({
 			| evlist |
 			if ((this.mostrecentupdate - evlist['t']) < seconds) {

@@ -169,6 +169,15 @@ TemporalDictMethodTester : UnitTest {
 		this.assertEquals(td.forward_data_seconds(100)[key], 100, "step 7");
 		this.assertEquals(td.rewind_data_seconds(1000)[key], nil, "step 8");
 	}
+
+	test_initial_state {
+		var key = 32;
+		var td = TemporalDict.new(Dictionary.with(*[10->123, 32->456, 54->789]));
+		td.set(key, 101112, 1);
+		this.assertEquals(td.forward_data_seconds(0)[key], 456, "step 0");
+		this.assertEquals(td.forward_data_seconds(2)[key], 101112, "step 1");
+		this.assertEquals(td.rewind_data_seconds(5)[key], 456, "step 2");
+	}
 }
 
 TemporalDictTester {
