@@ -1,0 +1,207 @@
+TITLE:: TemporalDict
+summary:: class to track evolution of key-value pairs over time
+categories:: Undocumented classes
+related:: Classes/Dictionary
+
+DESCRIPTION::
+TemporalDict is something resembling a Dictionary that tracks the history of key-value pairs over time.
+It provides methods to store key-value pairs at a given time-stamp, and methods to lookup key-value pairs at a given time.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+new creates a new TemporalDict
+
+ARGUMENT:: initialstate
+You can pass a Dictionary with initial state as argument. When looking up
+the key-value pairs at time stamps before the time at which the first event was added,
+the initial state is returned.
+
+returns:: a new TemporalDict object
+
+
+INSTANCEMETHODS::
+
+METHOD:: init
+initializer for the TemporalDict, called by new
+
+ARGUMENT:: initialstate
+A Dictionary with initial key-values. These key-values are returned if you lookup times
+occuring before the first added event.
+
+returns:: a new TemporalDict instance initialized with (optional) initial state.
+
+METHOD:: set
+This method allows to add a key-value pair at a given time stamp into the TemporalDict.
+The time stamp is optional. If you leave it out, a time stamp is automatically calculated from
+your computer's clock. When adding events with manually specified time stamps, the time stamps
+have to monotonously increase.
+
+ARGUMENT:: key
+The key of key-value pair.
+
+ARGUMENT:: value
+The value of the key-value pair.
+
+ARGUMENT:: seconds_since_start
+optional time stamp. When adding events, time has to increase monotonously.
+
+returns:: the TemporalDict you've just updated, so you can chain set commands.
+
+METHOD:: remove
+removes a key-value from the TemporalDict at a given time stamp.
+The time stamp is optional. If you leave it out, a time stamp is automatically calculated from
+your computer's clock. Removal and addition of new keys is also tracked over time.
+
+ARGUMENT:: key
+key to remove
+
+ARGUMENT:: seconds_since_start
+optional time stamp
+
+returns:: the temporaldict you just updated, so you can chain commands
+
+METHOD:: get_data_seconds_from_begin
+This method gets the key-value pairs as they were "seconds" seconds after the TemporalDict was created.
+
+ARGUMENT:: seconds
+The number of seconds (Float) since creation of the TemporalDict
+
+returns:: a Dictionary containing key-value pairs as they existed "seconds" seconds after creation of the TemporalDict
+
+METHOD:: get_data_seconds_from_end
+This method gets the key-value pairs as they were "seconds" before the last event was added in the TemporalDict
+
+ARGUMENT:: seconds
+The number of seconds (Float) before adding the last event in the TemporalDict
+
+returns:: a Dictionary containing key-value pairs as they existed "seconds" seconds before adding the last event in the TemporalDict
+
+METHOD:: forward_data_seconds
+This method allows moving forward in time through the key-value history.
+The first time forward_data_seconds is called on a TemporalDict it starts
+from the beginning (unless rewind_data_seconds was already called before)
+
+ARGUMENT:: seconds
+The number of seconds (Float) to forward the time pointer.
+
+returns:: a Dictionary with all key-value pairs as they existed "seconds" after the result of the previous forward_data_seconds or rewind_data_seconds call.
+
+METHOD:: rewind_data_seconds
+This method allows moving backward in time through the key-value history.
+The first time rewind_data_seconds is called on a TemporalDict it starts
+from the last added event (unless forward_data_seconds was already called before).
+
+ARGUMENT:: seconds
+The number of seconds (Float) to rewind the time pointer.
+
+returns:: a Dictionary with all key-value pairs as they existed "seconds" before the result of the previous forward_data_seconds or rewind_data_seconds call.
+
+METHOD:: reset_forward_rewind
+resets the internal time pointer, as if never forward_data_seconds or rewind_data_seconds had been called before
+
+returns:: nothing
+
+METHOD:: pr_time_to_index
+private method to map a time stamp to an eventlist index. The eventlist contains the additions/deletions as they happen over time.
+
+ARGUMENT:: time
+time stamp to look up
+
+ARGUMENT:: find_closest_before
+If the time stamp falls in between events, and find_closest_before is true, you'll find the previous event that was registered.
+If find_closest_before is false, you'll get the next event instead.
+
+ARGUMENT:: extrapolate
+If you lookup event values outside the start time and last event time, you get nil if extrapolate is false, and
+the value of the first/last event if extrapolate is true.
+
+returns:: an index in the event list
+
+METHOD:: pr_float_equal
+method to compare two floats for equality up to some tolerance. Tolerance specification is optional.
+Default tolerance is 1e-6.
+
+ARGUMENT:: f1
+first float
+
+ARGUMENT:: f2
+second float
+
+ARGUMENT:: tol
+tolerance
+
+returns:: boolean: true if two floats are equal, false otherwise
+
+METHOD:: initialstate
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: snapshot_dict
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: eventlist
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: starttime
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: mostrecentupdate
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: pr_sorted
+(describe method here)
+
+ARGUMENT:: a
+(describe argument here)
+
+ARGUMENT:: b
+(describe argument here)
+
+ARGUMENT:: c
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: snapshot_time
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: datadict
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+EXAMPLES::
+
+code::
+(
+   var td = TemporalDict();
+   var dict;
+   td.set(5, 10, 1);
+   td.set(16, 5000, 1.01);
+   td.set(5, 20, 2.4);
+   td.set(5, 30, 3.9);
+   td.set(16, 10, 3.91);
+   td.set(5, 40, 4);
+   td.set(5, 50, 5);
+   td.pr_time_to_index(time:2.5, find_closest_before:true, extrapolate:false); // 1
+   td.pr_time_to_index(time:2.5, find_closest_before:false, extrapolate:false); // 2
+   td.get_data_seconds_from_begin(2.5).debug("seconds from begin"); // Dictionary with (5->20, 16->5000)
+   // next line is first time we call forward_data => starts from begin
+   td.forward_data_seconds(4.5).debug("forward data seconds"); // Dictionary with (5->40, 16->10)
+   // next line builds further on previous line
+   td.rewind_data_seconds(0.55).debug("rewind data seconds"); // Dictionary with (5->30, 16->5000);
+)
+::
