@@ -200,6 +200,25 @@ TemporalDictMethodTester : UnitTest {
 		this.assertEquals(td.pr_time_to_index(3.9, false), 2);
 		this.assertEquals(td.pr_time_to_index(3.9, true), 2);
 	}
+
+	test_performance {
+		var td = TemporalDict();
+		var tstart, tend;
+		var profilingresults = [];
+		var iterations = 100000;
+		tstart = Date.localtime.rawSeconds;
+		iterations.do({
+			|i|
+			td.set([1,2,3,4,5].choose, 0.rrand(127), i*10/iterations);
+		});
+		profilingresults = profilingresults.add(('avg set time' : (Date.localtime.rawSeconds - tstart)/iterations));
+		tstart = Date.localtime.rawSeconds;
+		iterations.do({
+			var idx = td.pr_time_to_index(0.0.rrand(10.0));
+		});
+		profilingresults = profilingresults.add(('avg idx lookup time' : (Date.localtime.rawSeconds - tstart)/iterations));
+		profilingresults.debug("profiling results");
+	}
 }
 
 TemporalDictTester {
