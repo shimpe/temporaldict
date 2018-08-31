@@ -86,10 +86,6 @@ TemporalDict {
         this.snapshot_time = 0;
     }
 
-    pr_sorted { | a, b, c|
-        ^( (a < b) && (b <= c) );
-    }
-
     pr_float_equal { | f1, f2, tol=1e-6 |
         ^((f1 - f2).abs <= (tol * (f1.abs.max(f2.abs))));
     }

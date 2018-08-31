@@ -225,20 +225,6 @@ METHOD:: mostrecentupdate
 
 returns:: (describe returnvalue here)
 
-METHOD:: pr_sorted
-(describe method here)
-
-ARGUMENT:: a
-(describe argument here)
-
-ARGUMENT:: b
-(describe argument here)
-
-ARGUMENT:: c
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
 METHOD:: snapshot_time
 (describe method here)
 
