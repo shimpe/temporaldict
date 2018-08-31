@@ -53,6 +53,11 @@ TemporalDict {
 				reconstructedDict[operation['key']] = operation['new'];
 			};
 		});
+
+        // update data used by rewind/forward operations
+        this.snapshot_dict = reconstructedDict.copy();
+        this.snapshot_time = seconds;
+
 		^reconstructedDict;
 	}
 
@@ -68,6 +73,11 @@ TemporalDict {
 				reconstructedDict[operation['key']] = operation['old'];
 			};
 		});
+
+        // update data used by rewind/forward operations
+        this.snapshot_dict = reconstructedDict.copy();
+        this.snapshot_time = seconds;
+
 		^reconstructedDict;
 	}
 
