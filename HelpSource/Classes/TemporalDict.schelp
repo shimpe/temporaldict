@@ -21,6 +21,19 @@ the initial state is returned.
 returns:: a new TemporalDict object
 
 
+code::
+(
+// temporal dict without initial state
+var dict = TemporalDict.new();
+// or, shorter
+var dict2 = TemporalDict();
+// temporal dict with some initial values for keys 10,11 and 12
+var dict3 = TemporalDict.new(Dictionary.with(*[10->34, 11->56, 12->78]));
+// or, shorter
+var dict4 = TemporalDict(Dictionary.with(*[10->34, 11->56, 12->78]));
+)
+::
+
 INSTANCEMETHODS::
 
 METHOD:: init
@@ -49,6 +62,13 @@ optional time stamp. When adding events, time has to increase monotonously.
 
 returns:: the TemporalDict you've just updated, so you can chain set commands.
 
+code::
+(
+var dict = TemporalDict().set(10, 100, 1).set(11, 56, 2).set(12, 92, 3);
+dict.datadict.debug("data")
+)
+::
+
 METHOD:: remove
 removes a key-value from the TemporalDict at a given time stamp.
 The time stamp is optional. If you leave it out, a time stamp is automatically calculated from
@@ -61,6 +81,15 @@ ARGUMENT:: seconds_since_start
 optional time stamp
 
 returns:: the temporaldict you just updated, so you can chain commands
+
+code::
+(
+var dict = TemporalDict().set(10, 100, 1).set(11, 56, 2).set(12, 92, 3);
+dict.remove(12, 4);
+dict.get_data_seconds_from_begin(3.5).debug("before removal");
+dict.get_data_seconds_from_begin(4.5).debug("after removal");
+)
+::
 
 METHOD:: get_data_seconds_from_begin
 This method gets the key-value pairs as they were "seconds" seconds after the TemporalDict was created.
@@ -78,6 +107,15 @@ The number of seconds (Float) before adding the last event in the TemporalDict
 
 returns:: a Dictionary containing key-value pairs as they existed "seconds" seconds before adding the last event in the TemporalDict
 
+code::
+(
+var dict = TemporalDict().set(10, 100, 1).set(11, 56, 2).set(12, 92, 3);
+dict.remove(12, 4);
+dict.get_data_seconds_from_begin(3.5).debug("before removal");
+dict.get_data_seconds_from_begin(4.5).debug("after removal");
+)
+::
+
 METHOD:: forward_data_seconds
 This method allows moving forward in time through the key-value history.
 The first time forward_data_seconds is called on a TemporalDict it starts
@@ -88,6 +126,15 @@ The number of seconds (Float) to forward the time pointer.
 
 returns:: a Dictionary with all key-value pairs as they existed "seconds" after the result of the previous forward_data_seconds or rewind_data_seconds call.
 
+code::
+(
+var dict = TemporalDict().set(10, 100, 1).set(11, 56, 2).set(12, 92, 3);
+dict.remove(12, 4);
+dict.forward_data_seconds(3.5).debug("before removal");
+dict.forward_data_seconds(1).debug("after removal");
+)
+::
+
 METHOD:: rewind_data_seconds
 This method allows moving backward in time through the key-value history.
 The first time rewind_data_seconds is called on a TemporalDict it starts
@@ -97,6 +144,15 @@ ARGUMENT:: seconds
 The number of seconds (Float) to rewind the time pointer.
 
 returns:: a Dictionary with all key-value pairs as they existed "seconds" before the result of the previous forward_data_seconds or rewind_data_seconds call.
+
+code::
+(
+var dict = TemporalDict().set(10, 100, 1).set(11, 56, 2).set(12, 92, 3);
+dict.remove(12, 4);
+dict.forward_data_seconds(4.5).debug("after removal");
+dict.rewind_data_seconds(1).debug("before removal");
+)
+::
 
 METHOD:: reset_forward_rewind
 resets the internal time pointer, as if never forward_data_seconds or rewind_data_seconds had been called before
@@ -133,6 +189,16 @@ ARGUMENT:: tol
 tolerance
 
 returns:: boolean: true if two floats are equal, false otherwise
+
+code::
+(
+ var td = TemporalDict();
+ var n1 = 1e-9 + 0.09 - 0.09;
+ var n2 = 1e-9;
+ "You call this equality? %".format(n1 == n2).postln;
+ "You call this equality? %".format(td.pr_float_equal(n1, n2)).postln;
+)
+::
 
 METHOD:: initialstate
 (describe method here)
@@ -203,5 +269,12 @@ code::
    td.forward_data_seconds(4.5).debug("forward data seconds"); // Dictionary with (5->40, 16->10)
    // next line builds further on previous line
    td.rewind_data_seconds(0.55).debug("rewind data seconds"); // Dictionary with (5->30, 16->5000);
+)
+::
+
+code::
+(
+// to run the unit tests, just instantiate a TemporalDictTester class
+TemporalDictTester();
 )
 ::
