@@ -90,7 +90,7 @@ TemporalDict {
         ^((f1 - f2).abs <= (tol * (f1.abs.max(f2.abs))));
     }
 
-    pr_time_to_index { | time, find_closest_before = true, extrapolate = false |
+    pr_time_to_index { | time |
         var lowerbound = 0;
         var upperbound = this.eventlist.size-1;
         if (this.eventlist.size == 0) {
@@ -100,26 +100,10 @@ TemporalDict {
             ^0;
         };
         if (time > this.eventlist[upperbound]['t']) {
-            if (find_closest_before) {
-                ^upperbound;
-            } {
-                if (extrapolate) {
-                    ^upperbound;
-                } {
-                    ^nil;
-                };
-            };
+            ^upperbound;
         };
         if (time < this.eventlist[0]['t']) {
-            if (find_closest_before.not) {
-                ^0;
-            } {
-                if (extrapolate) {
-                    ^0;
-                } {
-                    ^nil;
-                };
-            };
+            ^nil;
         };
         while ({(upperbound-lowerbound) > 1}, {
             if (this.pr_float_equal(time, this.eventlist[lowerbound]['t'])) {
@@ -146,12 +130,21 @@ TemporalDict {
         if (upperbound == lowerbound) {
             ^lowerbound;
         } {
-            if (find_closest_before) {
-                ^lowerbound;
-            } {
-                ^upperbound;
-            };
+            var fractionalpart= time.linlin(this.eventlist[lowerbound]['t'], this.eventlist[upperbound]['t'], 0, 1);
+            ^(lowerbound + fractionalpart);
         };
+    }
+
+    pr_floor { | value, maxidx |
+        if (value.isNil) {^value};
+        if (value == inf) { ^maxidx };
+        ^value.floor;
+    }
+
+    pr_ceil { | value |
+        if (value.isNil) { ^0; };
+        if (value == inf) { ^value; };
+        ^value.ceil;
     }
 
     forward_data_seconds { | seconds = 0 |
@@ -168,8 +161,24 @@ TemporalDict {
                 // if iterations happened before, build on the previous state to calculate the new state
                 var orig_snapshot_time = this.snapshot_time;
                 var reconstructedDict = this.snapshot_dict;
-                var first_relevant_event = this.pr_time_to_index(orig_snapshot_time, false);
-                var latest_relevant_event = this.pr_time_to_index(orig_snapshot_time + seconds, true);
+                var first_relevant_event = this.pr_ceil(this.pr_time_to_index(orig_snapshot_time));
+                var latest_relevant_event = this.pr_floor(this.pr_time_to_index(orig_snapshot_time + seconds), this.eventlist.size-1);
+                if (first_relevant_event.isNil && latest_relevant_event.notNil) {
+                    first_relevant_event = 0;
+                } {
+                    if (first_relevant_event.isNil) {
+                        ^reconstructedDict;
+                    };
+                };
+                if (first_relevant_event == inf) {
+                    ^reconstructedDict;
+                };
+                if (latest_relevant_event.isNil) {
+                    ^reconstructedDict;
+                };
+                if (latest_relevant_event == inf) {
+                    latest_relevant_event = this.eventlist.size-1;
+                };
                 if (latest_relevant_event >= first_relevant_event) {
                     (first_relevant_event..latest_relevant_event).do({ |index|
                         var operation = this.eventlist[index]['replace'];
@@ -198,8 +207,24 @@ TemporalDict {
                 // if iterations happened before, build on previous state to calculate new state
                 var orig_snapshot_time = this.snapshot_time;
                 var reconstructedDict = this.snapshot_dict;
-                var latest_relevant_event = this.pr_time_to_index(orig_snapshot_time, true);
-                var first_relevant_event = this.pr_time_to_index(orig_snapshot_time - seconds, false);
+                var latest_relevant_event = this.pr_floor(this.pr_time_to_index(orig_snapshot_time), this.eventlist.size-1);
+                var first_relevant_event = this.pr_ceil(this.pr_time_to_index(orig_snapshot_time - seconds));
+                if (first_relevant_event.isNil && latest_relevant_event.notNil) {
+                    first_relevant_event = 0;
+                } {
+                    if (first_relevant_event.isNil) {
+                        ^reconstructedDict;
+                    };
+                };
+                if (first_relevant_event == inf) {
+                    ^reconstructedDict;
+                };
+                if (latest_relevant_event.isNil) {
+                    ^reconstructedDict;
+                };
+                if (latest_relevant_event == inf) {
+                    latest_relevant_event = this.eventlist.size-1;
+                };
                 // running backwards through events
                 if (first_relevant_event <= latest_relevant_event) {
                     (latest_relevant_event..first_relevant_event).do({ |index|
