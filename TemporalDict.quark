@@ -1,7 +1,7 @@
 (
   name: "TemporalDict",
   summary: "Quark to track key-value pairs over time",
-  version: "0.0.1",
+  version: "0.0.2",
   schelp: "TemporalDict.schelp",
   license: "GPL",
   copyright: "Stefaan Himpe, 2018"

@@ -113,7 +113,7 @@ TemporalDict {
                     ^upperbound;
                 } {
                     if (time > this.eventlist[lowerbound]['t']) {
-                        var newbound = ((lowerbound + upperbound)/2).asInt;
+                        var newbound = ((lowerbound + upperbound)/2).asInteger;
                         if (time < this.eventlist[newbound]['t']) {
                             upperbound = newbound;
                         } {
